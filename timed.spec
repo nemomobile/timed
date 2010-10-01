@@ -1,20 +1,19 @@
-Name:    timed
-Version: 2.11
-Release: 5
-Summary: Time daemon
-Group:   System/Daemons
-License: LGPLv2
-URL:     http://meego.gitorious.org/meego-middleware/timed
-Source0: %{name}-%{version}.tar.bz2
-Source1: %{name}.init
-Source2: %{name}.conf
-Patch0:  %{name}-libs-includes-fix.patch
-Patch1:  %{name}-create-pc-file.patch
-Patch2:  %{name}-disable-device-modes.patch
-Patch3:  %{name}-run-as-system-service.patch
+Name:     timed
+Version:  2.16
+Release:  1
+Summary:  Time daemon
+Group:    System/Daemons
+License:  LGPLv2
+URL:      http://meego.gitorious.org/meego-middleware/timed
+Source0:  %{name}-%{version}.tar.bz2
+Source1:  %{name}.init
+Source2:  %{name}.conf
+Patch0:   %{name}-libs-includes-fix.patch
+Patch1:   %{name}-create-pc-file.patch
+Patch2:   %{name}-disable-device-modes.patch
+Patch3:   %{name}-run-as-system-service.patch
 
 BuildRequires: pkgconfig(contextprovider-1.0)
-BuildRequires: pkgconfig(contextsubscriber-1.0)
 BuildRequires: pkgconfig(libpcre)
 BuildRequires: pkgconfig(QtCore) >= 4.6
 BuildRequires: asciidoc

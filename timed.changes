@@ -1,3 +1,6 @@
+* Fri Oct 01 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.16-1
+- New upstream version
+
 * Fri Sep 17 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.11-5
 - Run as root, not as user (BMC#6230)
   Add run-as-system-service.patch
