@@ -1,0 +1,20 @@
+diff --git a/src/lib/lib.pro b/src/lib/lib.pro
+index f91862b..d0916fd 100644
+--- a/src/lib/lib.pro
++++ b/src/lib/lib.pro
+@@ -6,7 +6,7 @@ QT -= gui
+ TARGET = timed
+ VERSION = 0.2.11
+ 
+-CONFIG += qmlog
++CONFIG += qmlog create_pc create_prl
+ 
+ HEADERS = interface.h
+ SOURCES = interface.cpp event-io.cpp event-pimple.cpp exception.cpp nanotime.cpp
+@@ -27,4 +27,6 @@ devheaders.path  = /usr/include/timed
+ prf.files = timed.prf
+ prf.path = /usr/share/qt4/mkspecs/features
+ 
++QMAKE_PKGCONFIG_DESTDIR = pkgconfig
++
+ INSTALLS = target devheaders prf

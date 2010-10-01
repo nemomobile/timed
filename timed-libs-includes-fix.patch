@@ -1,0 +1,52 @@
+diff --git a/src/fake-dialog-ui/fake-dialog-ui.pro b/src/fake-dialog-ui/fake-dialog-ui.pro
+index b69ad97..faf5d3b 100644
+--- a/src/fake-dialog-ui/fake-dialog-ui.pro
++++ b/src/fake-dialog-ui/fake-dialog-ui.pro
+@@ -9,7 +9,7 @@ VERSION = 2.8
+ INCLUDEPATH += ../h
+ 
+ QMAKE_LIBDIR_FLAGS += -L../voland -L../lib
+-LIBS += -ltimed-voland -ltimed
++LIBS += -ltimed-voland -ltimed -lqmlog
+ 
+ CONFIG += iodata qmlog
+ 
+diff --git a/src/server/server.pro b/src/server/server.pro
+index 6955e4b..a7560d0 100644
+--- a/src/server/server.pro
++++ b/src/server/server.pro
+@@ -9,7 +9,7 @@ VERSION = 2.8
+ INCLUDEPATH += ../h
+ 
+ QMAKE_LIBDIR_FLAGS += -L../lib -L../voland
+-LIBS += -ltimed -ltimed-voland
++LIBS += -ltimed -ltimed-voland -liodata -lqmlog
+ 
+ HEADERS += adaptor.h timed.h states.h automata.h singleshot.h pinguin.h unix-signal.h onitz.h
+ SOURCES += main.cpp timed.cpp states.cpp automata.cpp timeutil.cpp event.cpp misc.cpp settings.cpp unix-signal.cpp onitz.cpp
+diff --git a/src/simple-client/simple-client.pro b/src/simple-client/simple-client.pro
+index dc5f5ad..9ad7692 100644
+--- a/src/simple-client/simple-client.pro
++++ b/src/simple-client/simple-client.pro
+@@ -9,7 +9,7 @@ VERSION = 2.8
+ INCLUDEPATH += ../h
+ 
+ QMAKE_LIBDIR_FLAGS += -L../lib -L../voland
+-LIBS += -ltimed -ltimed-voland
++LIBS += -ltimed -ltimed-voland -lqmlog
+ 
+ CONFIG += iodata
+ 
+diff --git a/src/ticker/ticker.pro b/src/ticker/ticker.pro
+index a2dead0..99244cc 100644
+--- a/src/ticker/ticker.pro
++++ b/src/ticker/ticker.pro
+@@ -9,7 +9,7 @@ VERSION = 2.8
+ INCLUDEPATH += ../h
+ 
+ QMAKE_LIBDIR_FLAGS += -L../lib
+-LIBS += -ltimed
++LIBS += -ltimed -lqmlog
+ 
+ SOURCES = ticker.cpp
+ HEADERS = ticker.h

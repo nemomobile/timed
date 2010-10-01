@@ -1,0 +1,24 @@
+* Fri Sep 17 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.11-5
+- Run as root, not as user (BMC#6230)
+  Add run-as-system-service.patch
+  Remove desktop autostart file and d-bus service file
+  Add init script
+  Add dbus conf file
+
+* Wed Sep 08 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.11-4
+- Don't care about files in /tmp
+  Add disable-device-modes.patch, remove state-fix.patch
+
+* Tue Sep 07 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.11-3
+- Add desktop autostart file and d-bus service file (BMC#6174)
+
+* Fri Sep 03 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.11-2
+- Create runtime data dir
+- Do not require state file
+
+* Tue Aug 31 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.11-1
+- New upstream version
+- Create pkg-config file
+
+* Mon Aug 23 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.10-1
+- Initial meego packaging
