@@ -1,3 +1,16 @@
+* Fri Nov 26 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.27-2
+- Fix timed not detaching
+
+* Fri Nov 26 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.27-1
+- New upstream version
+- Add subsys support to init file
+- Add enable-creds patch to enable credentials handling
+- Add debugflag-fix patch to allow debug mode
+- Add uniform-versioning patch so that source version equals library version
+- Add typofix patch to allow compilation due to a typo
+- Drop libs-includes-fix patch, fixed upstream
+- Drop disable-device-modes patch, it's now configurable
+
 * Fri Oct 01 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.16-1
 - New upstream version
 

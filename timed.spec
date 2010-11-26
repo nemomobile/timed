@@ -1,6 +1,6 @@
 Name:     timed
-Version:  2.16
-Release:  1
+Version:  2.27
+Release:  2
 Summary:  Time daemon
 Group:    System/Daemons
 License:  LGPLv2
@@ -8,10 +8,12 @@ URL:      http://meego.gitorious.org/meego-middleware/timed
 Source0:  %{name}-%{version}.tar.bz2
 Source1:  %{name}.init
 Source2:  %{name}.conf
-Patch0:   %{name}-libs-includes-fix.patch
-Patch1:   %{name}-create-pc-file.patch
-Patch2:   %{name}-disable-device-modes.patch
-Patch3:   %{name}-run-as-system-service.patch
+Patch0:   %{name}-2.11-create-pc-file.patch
+Patch1:   %{name}-2.11-run-as-system-service.patch
+Patch2:   %{name}-2.27-enable-creds.patch
+Patch3:   %{name}-2.27-debugflag-fix.patch
+Patch4:   %{name}-2.27-uniform-versioning.patch
+Patch5:   %{name}-2.27-typofix.patch
 
 BuildRequires: pkgconfig(contextprovider-1.0)
 BuildRequires: pkgconfig(libpcre)
@@ -22,6 +24,7 @@ BuildRequires: dblatex
 BuildRequires: docbook-style-xsl
 BuildRequires: doxygen
 BuildRequires: graphviz
+BuildRequires: libcreds2-devel
 BuildRequires: libiodata-devel
 BuildRequires: libqmlog-devel
 BuildRequires: libxslt
@@ -45,6 +48,7 @@ Header files and shared lib symlink for %{name}.
 %package tests
 Summary:  Test cases for %{name}
 Group:    Development/System
+Requires: testrunner-lite
 Requires: %{name}-tools = %{version}-%{release}
 
 %description tests
@@ -67,6 +71,8 @@ and signal notification.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
+%patch5 -p1
 
 %build
 mkdir -p src/h
@@ -90,25 +96,23 @@ install -m 644 src/doc/libtimed-voland.3 %{buildroot}/%{_mandir}/man3/libtimed-v
 
 install -D %{SOURCE1} %{buildroot}/%{_sysconfdir}/rc.d/init.d/%{name}
 install -m 644 -D %{SOURCE2} %{buildroot}/%{_sysconfdir}/dbus-1/system.d/%{name}.conf
-
-# create runtime data dir
 install -d %{buildroot}/%{_localstatedir}/cache/%{name}/
 
 %post
 /sbin/ldconfig
-/sbin/chkconfig --add timed
+/sbin/chkconfig --add %{name}
 
 %preun
 if [ $1 = 0 ]; then
-  /sbin/service timed stop > /dev/null 2>&1
-  /sbin/chkconfig --del timed
+  /sbin/service %{name} stop > /dev/null 2>&1
+  /sbin/chkconfig --del %{name}
 fi
 
 %postun -p /sbin/ldconfig
 
 %files
 %defattr(-,root,root,-)
-%doc COPYING debian/changelog
+%doc COPYING debian/changelog debian/copyright
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
 %{_sysconfdir}/rc.d/init.d/%{name}
 %{_sysconfdir}/osso-cud-scripts/timed-clear-device.sh
@@ -148,5 +152,8 @@ fi
 %defattr(-,root,root,-)
 %doc COPYING
 %{_bindir}/fake-dialog-ui
+%{_bindir}/logging-test
+%{_bindir}/logging-test.launch
+%{_bindir}/qmtime-users.sh
 %{_bindir}/simple-client
 %{_bindir}/ticker

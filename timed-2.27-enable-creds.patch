@@ -1,0 +1,26 @@
+diff --git a/src/server/f.h b/src/server/f.h
+index 0f88d24..8bb7f21 100644
+--- a/src/server/f.h
++++ b/src/server/f.h
+@@ -25,8 +25,7 @@
+ #define TIMED_F_H
+ 
+ #if __MEEGO__
+-#  define F_CREDS_UID 1
+-//#  define F_CREDS_NOBODY 1
++#  define F_CREDS_AEGIS_LIBCREDS 1
+ #endif
+ 
+ #if __HARMATTAN__
+diff --git a/src/server/server.pro b/src/server/server.pro
+index a1ef262..b7c8abb 100644
+--- a/src/server/server.pro
++++ b/src/server/server.pro
+@@ -49,6 +49,7 @@ INSTALLS += target xml typeinfo backupconf cud rfs
+ CONFIG(MEEGO) \
+ {
+   message("MEEGO flag is set")
++  LIBS    += -lcreds
+   DEFINES += __MEEGO__
+ } \
+ else \

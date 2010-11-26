@@ -1,0 +1,12 @@
+diff --git a/src/server/f.h b/src/server/f.h
+index 8bb7f21..c687a62 100644
+--- a/src/server/f.h
++++ b/src/server/f.h
+@@ -26,6 +26,7 @@
+ 
+ #if __MEEGO__
+ #  define F_CREDS_AEGIS_LIBCREDS 1
++#  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
+ #endif
+ 
+ #if __HARMATTAN__

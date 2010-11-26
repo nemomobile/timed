@@ -1,0 +1,26 @@
+diff --git a/src/lib/lib.pro b/src/lib/lib.pro
+index e04148f..d33f663 100644
+--- a/src/lib/lib.pro
++++ b/src/lib/lib.pro
+@@ -4,7 +4,7 @@ QT += dbus
+ QT -= gui
+ 
+ TARGET = timed
+-VERSION = 0.2.27
++VERSION = 2.27
+ 
+ CONFIG += qmlog
+ 
+diff --git a/src/voland/voland.pro b/src/voland/voland.pro
+index 73c4dec..2e84ea0 100644
+--- a/src/voland/voland.pro
++++ b/src/voland/voland.pro
+@@ -4,7 +4,7 @@ QT += dbus
+ QT -= gui
+ 
+ TARGET = timed-voland
+-VERSION = 0.2.27
++VERSION = 2.27
+ 
+ HEADERS = interface.h
+ SOURCES = interface.cpp reminder-pimple.cpp

@@ -1,69 +1,60 @@
-#!/bin/sh
-
-# Init file for time daemon
+#!/bin/bash
 
 ### BEGIN INIT INFO
-# Provides:             timed
-# Required-Start:       messagebus
-# Required-Stop:
-# Default-Start:        2 3 4 5
-# Default-Stop:         0 1 6
-# Short-Description:    timed
+# Provides:          timed
+# Required-Start:    $remote_fs $syslog messagebus
+# Required-Stop:     $remote_fs $syslog messagebus
+# Default-Start:     2 5
+# Default-Stop:      0 1 3 4 6
+# Short-Description: Time daemon
 ### END INIT INFO
 
-# source function library
+# Source function library
 . /etc/rc.d/init.d/functions
 
-servicename=timed
-processname=timed
-bindir=/usr/bin
-
+PROG=timed
+DESC="Time daemon"
+OPTS="&"
 RETVAL=0
 
 start() {
-    echo -n "Starting timed: "
-    exec $bindir/$processname &> /dev/null &
-    RETVAL=$?
-    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$servicename
-    success
-    echo
-    return $RETVAL
+  echo -n "Starting $DESC: "
+  daemon $PROG $OPTS
+  RETVAL=$?
+  echo
+  [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$PROG
 }
 
 stop() {
-    echo -n "Stopping timed: "
-    killproc $processname
-    RETVAL=$?
-    echo
-    [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$servicename
-    return $RETVAL
+  echo -n "Stopping $DESC: "
+  killproc $PROG
+  RETVAL=$?
+  echo
+  [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$PROG
 }
 
 case "$1" in
-    start)
-	start
-	;;
-    stop)
-	stop
-	;;
-    restart|reload)
-	stop
-	start
-	;;
-    condrestart)
-        if [ -f /var/lock/subsys/$servicename ]; then
-            stop
-            start
-        fi
-        ;;
-    status)
-	status $processname
-	RETVAL=$?
-	;;
-    *)
-	echo "Usage: $0 {start|stop|restart|reload|condrestart|status}"
-	RETVAL=1
-	;;
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  force-reload)
+    status $PROG > /dev/null && restart
+    ;;
+  status)
+    status $PROG
+    RETVAL=$?
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|force-reload|status}"
+    RETVAL=3
+    ;;
 esac
 
 exit $RETVAL
