@@ -1,32 +1,31 @@
 Name:     timed
-Version:  2.27
-Release:  2
+Version:  2.31
+Release:  1
 Summary:  Time daemon
-Group:    System/Daemons
+Group:    System/System Control
 License:  LGPLv2
 URL:      http://meego.gitorious.org/meego-middleware/timed
 Source0:  %{name}-%{version}.tar.bz2
 Source1:  %{name}.init
 Source2:  %{name}.conf
-Patch0:   %{name}-2.11-create-pc-file.patch
 Patch1:   %{name}-2.11-run-as-system-service.patch
 Patch2:   %{name}-2.27-enable-creds.patch
 Patch3:   %{name}-2.27-debugflag-fix.patch
-Patch4:   %{name}-2.27-uniform-versioning.patch
 Patch5:   %{name}-2.27-typofix.patch
+Patch6:   %{name}-2.31-add-missing-if.patch
 
 BuildRequires: pkgconfig(contextprovider-1.0)
-BuildRequires: pkgconfig(libpcre)
+BuildRequires: pkgconfig(dsme_dbus_if)
+BuildRequires: pkgconfig(libpcrecpp)
 BuildRequires: pkgconfig(QtCore) >= 4.6
 BuildRequires: asciidoc
-#BuildRequires: bitstream-vera-fonts
 BuildRequires: dblatex
 BuildRequires: docbook-style-xsl
 BuildRequires: doxygen
 BuildRequires: graphviz
 BuildRequires: libcreds2-devel
 BuildRequires: libiodata-devel
-BuildRequires: libqmlog-devel
+BuildRequires: libqmlog-devel >= 0.0.9
 BuildRequires: libxslt
 BuildRequires: python >= 2.5
 
@@ -67,12 +66,11 @@ and signal notification.
 
 %prep
 %setup -q
-%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch4 -p1
 %patch5 -p1
+%patch6 -p1
 
 %build
 mkdir -p src/h
@@ -80,13 +78,12 @@ ln -s ../server src/h/daemon
 ln -s ../lib    src/h/timed
 ln -s ../voland src/h/timed-voland
 cd src
-qmake -recursive "CONFIG += MEEGO"
+%qmake -recursive "CONFIG += MEEGO"
 make %{?_smp_mflags}
 
 %install
-cd src
-make INSTALL_ROOT=%{buildroot} install
-cd political
+%qmake_install -C src
+cd src/political
 INSTALL_ROOT=%{buildroot} ./debian-install.sh
 cd ../..
 ln -s %{_bindir}/%{name} %{buildroot}/%{_bindir}/cute-timed
@@ -136,10 +133,10 @@ fi
 %doc COPYING
 %{_includedir}/%{name}/*
 %{_includedir}/timed-voland/*
-%{_libdir}/libtimed.prl
 %{_libdir}/libtimed.so
 %{_libdir}/libtimed-voland.so
 %{_libdir}/pkgconfig/timed.pc
+%{_libdir}/pkgconfig/timed-voland.pc
 %{_datadir}/qt4/mkspecs/features/timed.prf
 %{_datadir}/qt4/mkspecs/features/timed-voland.prf
 
@@ -154,6 +151,8 @@ fi
 %{_bindir}/fake-dialog-ui
 %{_bindir}/logging-test
 %{_bindir}/logging-test.launch
+%{_bindir}/ntp-helper
+%{_bindir}/memory
 %{_bindir}/qmtime-users.sh
 %{_bindir}/simple-client
 %{_bindir}/ticker

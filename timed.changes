@@ -1,8 +1,12 @@
-* Fri Nov 26 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.27-2
-- Fix timed not detaching
+* Tue Dec 21 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.31-1
+- New upstream version
+- Conforms to upstream version 2.31-a
+- Add add-missing-if patch
+- Drop create-pc-file patch, .pc provided upstream
+- Drop uniform-versioning patch, not needed by pc file generation anymore
 
 * Fri Nov 26 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.27-1
-- New upstream version
+- New upstream version (BMC#10592)
 - Add subsys support to init file
 - Add enable-creds patch to enable credentials handling
 - Add debugflag-fix patch to allow debug mode
@@ -10,6 +14,7 @@
 - Add typofix patch to allow compilation due to a typo
 - Drop libs-includes-fix patch, fixed upstream
 - Drop disable-device-modes patch, it's now configurable
+- Fix timed not detaching
 
 * Fri Oct 01 2010 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.16-1
 - New upstream version
