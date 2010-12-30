@@ -1,5 +1,5 @@
 Name:     timed
-Version:  2.31
+Version:  2.32
 Release:  1
 Summary:  Time daemon
 Group:    System/System Control
