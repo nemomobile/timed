@@ -18,7 +18,7 @@ OPTS="&"
 RETVAL=0
 
 start() {
-  echo -n "Starting $DESC: "
+  echo -n "Starting $DESC ($PROG): "
   daemon $PROG $OPTS
   RETVAL=$?
   echo
