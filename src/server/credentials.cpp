@@ -24,11 +24,19 @@
 #include "f.h"
 
 #include <stdlib.h>
+#if F_CREDS_AEGIS_LIBCREDS
 #include <sys/creds.h>
+#endif // F_CREDS_AEGIS_LIBCREDS
 
 #include <QDBusReply>
 
 #include <qmlog>
+
+#if F_CREDS_UID
+#include <pwd.h>
+#include <grp.h>
+#include "timed/interface"
+#endif // F_CREDS_UID
 
 #include "credentials.h"
 
@@ -55,17 +63,33 @@
    * At the moment I do not know how to handle either of those ...
    * ;-(
    */
-uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name)
+uint32_t get_pid_from_dbus_sync(const QDBusConnection &bus, const QString &name)
 {
   QString service   =  "org.freedesktop.DBus" ;
   QString path      = "/org/freedesktop/DBus" ;
   QString interface =  "org.freedesktop.DBus" ;
-#if F_CREDS_AEGIS_LIBCREDS
   QString method    = "GetConnectionUnixProcessID" ;
-#elif F_CREDS_UID
+
+  QDBusMessage req  = QDBusMessage::createMethodCall(service, path, interface, method);
+  req << name;
+
+  QDBusReply<uint> reply = bus.call(req);
+
+  if (reply.isValid())
+    return reply.value() ;
+  else
+  {
+    log_error("%s: did not get a valid reply", CSTR(method));
+    return ~0 ;
+  }
+}
+
+uint32_t get_uid_from_dbus_sync(const QDBusConnection &bus, const QString &name)
+{
+  QString service   =  "org.freedesktop.DBus" ;
+  QString path      = "/org/freedesktop/DBus" ;
+  QString interface =  "org.freedesktop.DBus" ;
   QString method    = "GetConnectionUnixUser" ;
-  // It seems, we can't get GID just by asking dbus daemon.
-#endif
 
   QDBusMessage req  = QDBusMessage::createMethodCall(service, path, interface, method);
   req << name;
@@ -83,6 +107,42 @@ uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString
 
 #endif // F_DBUS_INFO_AS_CREDENTIALS
 
+uid_t nameToUid(string name)
+{
+  passwd *info = getpwnam(name.c_str()) ;
+  if (info)
+    return info->pw_uid ;
+  // couldn't get uid for username
+  return -1 ;
+}
+
+string uidToName(uid_t u)
+{
+  passwd *info = getpwuid(u) ;
+  if (info)
+    return info->pw_name ;
+  // couldn't get name for uid
+  return "nobody" ;
+}
+
+gid_t nameToGid(string name)
+{
+  group *info = getgrnam(name.c_str()) ;
+  if (info)
+    return info->gr_gid ;
+  // couldn't get gid for groupname
+  return -1 ;
+}
+
+string gidToName(gid_t g)
+{
+  group *info = getgrgid(g) ;
+  if (info)
+    return info->gr_name ;
+  // couldn't get name for gid
+  return "nogroup" ;
+}
+
 bool credentials_t::apply() const
 {
 #if F_CREDS_AEGIS_LIBCREDS
@@ -96,8 +156,16 @@ bool credentials_t::apply() const
   creds_free(aegis_creds_want) ;
 
   return res ;
-#else // F_CREDS_AEGIS_LIBCREDS
-#error credentials_t::apply() is only implemented for F_CREDS_AEGIS_LIBCREDS
+
+#elif F_CREDS_UID
+  if (setgid(nameToGid(gid)) != 0 || setgid(nameToUid(uid)) != 0) {
+    log_error("uid cred_set() failed") ;
+    return false ;
+  }
+  return true ;
+
+#else
+#error unimplemented credentials type
 #endif
 }
 
@@ -168,8 +236,12 @@ credentials_t credentials_t::from_current_process()
   creds_free(aegis_creds) ;
 
   return creds ;
-#else // not F_CREDS_AEGIS_LIBCREDS
-#error credentials_t::from_current_process() is only implemented for F_CREDS_AEGIS_LIBCREDS
+
+#elif F_CREDS_UID
+  return credentials_t(uidToName(getuid()), gidToName(getgid())) ;
+
+#else
+#error unimplemented credentials type
 #endif
 }
 
@@ -183,9 +255,25 @@ credentials_t credentials_t::from_current_process()
 // TODO: F_CREDS_AEGIS_LIBCREDS --- make this function #ifdef'ed
 
 credentials_t::credentials_t(const QDBusMessage &message)
+: uid("nobody"), gid("nobody")
 {
 #if F_CREDS_AEGIS_LIBCREDS
   *this = Aegis::credentials_from_dbus_connection(message) ;
+
+#elif F_CREDS_UID
+  QString sender = message.service() ;
+  uint32_t process_id = get_pid_from_dbus_sync(Maemo::Timed::bus(), sender) ;
+  uint32_t user_id = get_uid_from_dbus_sync(Maemo::Timed::bus(), sender) ;
+
+  if (process_id == ~0u)
+    log_warning("can't get process (pid) of the caller, already terminated?") ;
+  else
+    gid = gidToName(getpgid(process_id)) ;
+  if (user_id == ~0u)
+    log_warning("can't get user (uid) of the caller, already terminated?") ;
+  else
+    uid = uidToName(user_id) ;
+
 #else
 #error credentials_t;:from_dbus_connection is only implemented for aegis
 #endif
