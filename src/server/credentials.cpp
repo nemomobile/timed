@@ -141,10 +141,14 @@ bool credentials_t::apply_and_compare()
     os << "}" ;
 
   bool equal = id_matches and all_accrued and all_dropped ;
+  bool ret = id_matches and all_dropped ;
 
 #undef COMMA_A
 #undef COMMA_D
 
+#else
+  bool equal = id_matches ;
+  bool ret =  id_matches ;
 #endif // F_TOKENS_AS_CREDENTIALS
 
 #undef COMMA
@@ -152,7 +156,7 @@ bool credentials_t::apply_and_compare()
   if(!equal)
     log_warning("applied and wanted credentials differ: %s", os.str().c_str()) ;
 
-  return id_matches and all_dropped ;
+  return ret ;
 }
 
 credentials_t credentials_t::from_current_process()
