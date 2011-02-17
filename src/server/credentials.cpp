@@ -61,9 +61,9 @@ uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString
   QString service   =  "org.freedesktop.DBus" ;
   QString path      = "/org/freedesktop/DBus" ;
   QString interface =  "org.freedesktop.DBus" ;
-#if F_CREDS_AEGIS_LIBCREDS
+#if F_DBUS_INFO_UID
   QString method    = "GetConnectionUnixProcessID" ;
-#elif F_CREDS_UID
+#elif F_DBUS_INFO_PID
   QString method    = "GetConnectionUnixUser" ;
   // It seems, we can't get GID just by asking dbus daemon.
 #endif
@@ -97,9 +97,29 @@ bool credentials_t::apply() const
   creds_free(aegis_creds_want) ;
 
   return res ;
-#else // F_CREDS_AEGIS_LIBCREDS
-#error credentials_t::apply() is only implemented for F_CREDS_AEGIS_LIBCREDS
+#else
+  // currently we're only setting uid and gid
+
+  string group_name = gid ; // probably empty
+#if F_CREDS_NOBODY
+  group_name = "nogroup" ;
+#elif F_DEFAULT_GID_AS_CREDENTIALS
+  group_id = default_group_name_by_user_name(uid) ;
 #endif
+
+  string user_name = uid ; // probably empty
+#if F_CREDS_NOBODY
+  user_name = "nobody" ;
+#endif
+
+  if (not set_group_by_name(group_name))
+    return false ;
+
+  if (not set_user_by_name(user_name))
+    return false ;
+
+  return true ;
+#endif // else F_CREDS_AEGIS_LIBCREDS
 }
 
 bool credentials_t::apply_and_compare()
