@@ -119,7 +119,7 @@ bool credentials_t::apply() const
     return false ;
 
   return true ;
-#endif // else F_CREDS_AEGIS_LIBCREDS
+#endif // else (F_CREDS_AEGIS_LIBCREDS)
 }
 
 bool credentials_t::apply_and_compare()
@@ -128,6 +128,8 @@ bool credentials_t::apply_and_compare()
     return false ;
 
   credentials_t current = credentials_t::from_current_process() ;
+  string have_uid = current.uid, have_gid = current.gid ;
+  string expecting_uid = uid, expecting_gid = gid ;
 
   ostringstream os ;
 
@@ -185,8 +187,14 @@ credentials_t credentials_t::from_given_process(pid_t pid)
   creds_free(aegis_creds) ;
 
   return creds ;
-#else // not F_CREDS_AEGIS_LIBCREDS
-#error credentials_t::from_given_process(pid_t) is only implemented for F_CREDS_AEGIS_LIBCREDS
+#else
+  uid = gid = "" ;
+  tokens.clear() ;
+#if F_UID_AS_CREDENTIALS
+  uid = 
+#endif
+#if F_GID_AS_CREDENTIALS
+#endif
 #endif
 }
 
