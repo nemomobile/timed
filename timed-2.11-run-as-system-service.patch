@@ -1,8 +1,8 @@
 diff --git a/src/lib/interface.h b/src/lib/interface.h
-index d021e50..2cb617b 100644
+index 21a9a7d..f4b4e06 100644
 --- a/src/lib/interface.h
 +++ b/src/lib/interface.h
-@@ -54,7 +54,7 @@ namespace Maemo
+@@ -58,7 +58,7 @@ namespace Maemo
      }
      inline QDBusConnection bus()
      {
@@ -10,7 +10,7 @@ index d021e50..2cb617b 100644
 +      return QDBusConnection::systemBus() ;
      }
      // struct signal_receiver ;
-     class Interface : public QDBusInterface
+     class Interface : public QDBusAbstractInterface
 diff --git a/src/server/com.nokia.time.context b/src/server/com.nokia.time.context
 index e94de1a..655d63c 100644
 --- a/src/server/com.nokia.time.context
@@ -45,15 +45,15 @@ index 4cd7a64..94a5904 100755
  
  # vim:tw=0:
 diff --git a/src/voland/interface.h b/src/voland/interface.h
-index 501c727..ed8224e 100644
+index 8d770de..5195677 100644
 --- a/src/voland/interface.h
 +++ b/src/voland/interface.h
-@@ -50,7 +50,7 @@ namespace Maemo
+@@ -54,7 +54,7 @@ namespace Maemo
        }
        inline QDBusConnection bus()
        {
 -        return QDBusConnection::sessionBus() ;
 +        return QDBusConnection::systemBus() ;
        }
-       class Interface : public QDBusInterface
+       class Interface : public QDBusAbstractInterface
        {

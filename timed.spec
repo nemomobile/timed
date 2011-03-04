@@ -1,33 +1,32 @@
 Name:     timed
-Version:  2.35
+Version:  2.37
 Release:  1
 Summary:  Time daemon
 Group:    System/System Control
 License:  LGPLv2
 URL:      http://meego.gitorious.org/meego-middleware/timed
 Source0:  %{name}-%{version}.tar.bz2
-Source1:  %{name}.init
-Source2:  %{name}.conf
+Source1:  %{name}.conf
 Patch1:   %{name}-2.11-run-as-system-service.patch
 Patch2:   %{name}-2.27-enable-creds.patch
 Patch3:   %{name}-2.27-debugflag-fix.patch
 Patch5:   %{name}-2.27-typofix.patch
-Patch6:   %{name}-2.31-add-missing-if.patch
+Patch7:   %{name}-2.35-use-pkgconfig.patch
+Patch8:   %{name}-2.37-cellular-separation.patch
+Patch9:   %{name}-2.37-compiler-fix.patch
 
 BuildRequires: pkgconfig(contextprovider-1.0)
 BuildRequires: pkgconfig(dsme_dbus_if)
+BuildRequires: pkgconfig(libcreds3) >= 1.0.0
 BuildRequires: pkgconfig(libpcrecpp)
-BuildRequires: pkgconfig(QtCore) >= 4.6
+BuildRequires: pkgconfig(QtCore) >= 4.7
 BuildRequires: asciidoc
 BuildRequires: dblatex
 BuildRequires: docbook-style-xsl
-BuildRequires: doxygen
 BuildRequires: graphviz
-BuildRequires: libcreds2-devel
-BuildRequires: libiodata-devel
-BuildRequires: libqmlog-devel >= 0.0.9
+BuildRequires: libiodata-devel >= 0.17
+BuildRequires: libqmlog-devel >= 0.10
 BuildRequires: libxslt
-BuildRequires: python >= 2.5
 
 Requires: tzdata
 
@@ -70,9 +69,12 @@ and signal notification.
 %patch2 -p1
 %patch3 -p1
 %patch5 -p1
-%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
 
 %build
+export TIMED_VERSION=`head -n1 debian/changelog | sed "s/.*(\([^)+]*\).*/\1/"`
 mkdir -p src/h
 ln -s ../server src/h/daemon
 ln -s ../lib    src/h/timed
@@ -86,24 +88,14 @@ make %{?_smp_mflags}
 cd src/political
 INSTALL_ROOT=%{buildroot} ./debian-install.sh
 cd ../..
-ln -s %{_bindir}/%{name} %{buildroot}/%{_bindir}/cute-timed
 install -m 644 -D src/doc/timed.8 %{buildroot}/%{_mandir}/man8/timed.8
 install -m 644 -D src/doc/libtimed.3 %{buildroot}/%{_mandir}/man3/libtimed.3
 install -m 644 src/doc/libtimed-voland.3 %{buildroot}/%{_mandir}/man3/libtimed-voland.3
 
-install -D %{SOURCE1} %{buildroot}/%{_sysconfdir}/rc.d/init.d/%{name}
-install -m 644 -D %{SOURCE2} %{buildroot}/%{_sysconfdir}/dbus-1/system.d/%{name}.conf
+install -m 644 -D %{SOURCE1} %{buildroot}/%{_sysconfdir}/dbus-1/system.d/%{name}.conf
 install -d %{buildroot}/%{_localstatedir}/cache/%{name}/
 
-%post
-/sbin/ldconfig
-/sbin/chkconfig --add %{name}
-
-%preun
-if [ $1 = 0 ]; then
-  /sbin/service %{name} stop > /dev/null 2>&1
-  /sbin/chkconfig --del %{name}
-fi
+%post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
@@ -111,10 +103,8 @@ fi
 %defattr(-,root,root,-)
 %doc COPYING debian/changelog debian/copyright
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/%{name}.conf
-%{_sysconfdir}/rc.d/init.d/%{name}
 %{_sysconfdir}/osso-cud-scripts/timed-clear-device.sh
 %{_sysconfdir}/osso-rfs-scripts/timed-restore-original-settings.sh
-%{_bindir}/cute-timed
 %{_bindir}/%{name}
 %{_libdir}/libtimed.so.*
 %{_libdir}/libtimed-voland.so.*
@@ -123,7 +113,6 @@ fi
 %{_mandir}/man3/libtimed.3.gz
 %{_mandir}/man3/libtimed-voland.3.gz
 %{_mandir}/man8/timed.8.gz
-%{_datadir}/%{name}/typeinfo/*.type
 %{_datadir}/tzdata-timed/*.data
 %{_datadir}/zoneinfo/Mobile/UTC*
 %{_localstatedir}/cache/timed/

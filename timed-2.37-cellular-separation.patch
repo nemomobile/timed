@@ -1,0 +1,89 @@
+diff --git a/src/lib/interface.h b/src/lib/interface.h
+index f4b4e06..c7c767f 100644
+--- a/src/lib/interface.h
++++ b/src/lib/interface.h
+@@ -96,10 +96,12 @@ namespace Maemo
+       qtdbus_method(pid, (void)) ;
+       qtdbus_method(parse, (const QString &text), text) ;
+       qtdbus_method(customization_values, (void)) ;
++#if __HARMATTAN__
+       qtdbus_method(fake_nitz_signal, (int mcc, int offset, int time, int dst), mcc, offset, time, dst) ;
+       qtdbus_method(fake_operator_signal, (const QString &mcc, const QString &mnc), mcc, mnc) ;
+       qtdbus_method(fake_csd_time_signal, (const QString &mcc, const QString &mnc, int offset, int time, int dst, int seconds, int nano_seconds), mcc, mnc, offset, time, dst, seconds, nano_seconds) ;
+       qtdbus_method(fake_csd_time_signal_now, (const QString &mcc, const QString &mnc, int offset, int time, int dst), mcc, mnc, offset, time, dst) ;
++#endif // __HARMATTAN__
+       qtdbus_method(get_log_level, (void)) ;
+       qtdbus_method(set_log_level, (int n), n) ;
+     } ;
+diff --git a/src/server/adaptor.h b/src/server/adaptor.h
+index 31909e9..ddcd073 100644
+--- a/src/server/adaptor.h
++++ b/src/server/adaptor.h
+@@ -198,6 +198,7 @@ public slots:
+     timed->halt(string_q_to_std(what)) ;
+   }
+ 
++#if F_CSD
+   bool fake_csd_time_signal(const QString &mcc, const QString &mnc, int offset, int time, int dst, int seconds, int nano_seconds)
+   {
+     log_notice("(fake_csd_time_signal) mcc='%s' mnc='%s' offset=%d time=%d dst=%d seconds=%d nano_seconds=%d", mcc.toStdString().c_str(), mnc.toStdString().c_str(), offset, time, dst, seconds, nano_seconds) ;
+@@ -247,6 +248,7 @@ public slots:
+     timed->csd->process_csd_network_operator(mcc, mnc) ;
+     return true ;
+   }
++#endif // F_CSD
+ 
+   int get_log_level(const QDBusMessage &message)
+   {
+diff --git a/src/server/timed.cpp b/src/server/timed.cpp
+index def3319..37e184b 100644
+--- a/src/server/timed.cpp
++++ b/src/server/timed.cpp
+@@ -129,7 +129,10 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
+   init_load_events() ;
+   log_debug() ;
+ 
++#if F_CSD
+   init_cellular_services() ;
++#endif // F_CSD
++
+   log_debug() ;
+ 
+   init_dst_checker() ;
+@@ -527,6 +530,7 @@ void Timed::init_start_event_machine()
+   am->start() ;
+ }
+ 
++#if F_CSD
+ void Timed::init_cellular_services()
+ {
+ #if 0
+@@ -553,6 +557,7 @@ void Timed::init_cellular_services()
+   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
+ #endif
+ }
++#endif // F_CSD
+ 
+ void Timed::init_dst_checker()
+ {
+diff --git a/src/ticker/ticker.h b/src/ticker/ticker.h
+index a959059..8a53722 100644
+--- a/src/ticker/ticker.h
++++ b/src/ticker/ticker.h
+@@ -91,6 +91,7 @@ static string str_printf(const char *format, ...)
+ 
+   return formatted ;
+ }
++#if USE_CELLULAR_QT
+ static string csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &nti)
+ {
+   if (not nti.isValid())
+@@ -120,7 +121,7 @@ static string csd_network_time_info_to_string(const Cellular::NetworkTimeInfo &n
+ 
+   return os.str() ;
+ }
+-
++#endif // USE_CELLULAR_QT
+ 
+ class ticker : public QCoreApplication
+ {

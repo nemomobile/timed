@@ -1,8 +1,8 @@
 diff --git a/src/server/timed.cpp b/src/server/timed.cpp
-index 13520ca..4ddd8a6 100644
+index 601a394..def3319 100644
 --- a/src/server/timed.cpp
 +++ b/src/server/timed.cpp
-@@ -157,7 +157,7 @@ void Timed::init_scratchbox_mode()
+@@ -170,7 +170,7 @@ void Timed::init_scratchbox_mode()
    scratchbox_mode = path && strstr(path, "scratchbox") ; // XXX: more robust sb detection?
    log_info("%s" "SCRATCHBOX detected", scratchbox_mode ? "" : "no ") ;
  #else
