@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -71,6 +71,15 @@ void map_std_to_q(const map<string, string> &from, QMap<QString, QString> &to)
       log_warning("Duplicate key: '%s'=>'%s', using new value '%s'", it->first.c_str(), string_q_to_std(old.value()).c_str(), it->second.c_str()) ;
     to.insert(k, v) ;
   }
+}
+
+string str_iso8601(time_t t) // 2008-05-11T15:30:00Z
+{
+  struct tm tm ;
+  if (gmtime_r(&t, &tm)!=&tm)
+    return "n/a" ;
+  else
+    return str_printf("%04d-%02d-%02dT%02d:%02d:%02dZ", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec) ;
 }
 
 string str_printf(const char *format, ...)

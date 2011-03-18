@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -130,12 +130,13 @@ struct manual_zone_t : public zone_source_t
 struct cellular_zone_t : public zone_source_t
 {
   virtual ~cellular_zone_t() { }
-  tz_suggestions_t suggestions ;
+  suggestion_t suggestions ;
   const char *name() const { return "cellular_zone" ; }
   // void load(const iodata::record *) ;
   // iodata::record *save() const ;
 } ;
 
+#if 0
 // TODO: remove this?
 struct customization_settings
 {
@@ -160,8 +161,9 @@ struct customization_settings
   static QByteArray get_hash();
 
 };
+#endif
 
-struct source_settings
+struct source_settings : public QObject
 {
   source_settings(Timed *owner) ;
   virtual ~source_settings() ;
@@ -205,8 +207,13 @@ struct source_settings
   void postload_fix_manual_zone() ;
   void postload_fix_manual_offset() ;
 
+#if 0
   void cellular_information(const cellular_info_t &ci) ;
-
+#endif
+  Q_OBJECT ;
+public Q_SLOTS:
+  void cellular_time_slot(const cellular_time_t &T) ;
+  void cellular_zone_slot(olson *tz, suggestion_t s, bool sure) ;
 } ;
 
 #endif

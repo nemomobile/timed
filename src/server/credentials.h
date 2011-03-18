@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -55,10 +55,13 @@ struct credentials_t
   bool apply_and_compare() ; // set the credentials and check if they are really set
 
   static credentials_t from_current_process() ; // get the credentials of the current process
+  static credentials_t from_given_process(pid_t) ; // get the credentials of some other process
   credentials_t(const QDBusMessage &msg) ; // get from dbus client
 
   iodata::record *save() const ;
   credentials_t(const iodata::record *r) ; // load
+
+  std::string str() const ;
 } ;
 
 #endif // CREDENTIALS_H

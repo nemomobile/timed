@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -290,8 +290,9 @@ void machine_t::process_transition_queue()
       continue ;
     }
     abstract_state_t *old_state = e->get_state() ;
-    log_assert(new_state!=old_state, "New state is the same as the old one (%s)", old_state->name()) ;
     log_notice("State transition %d:'%s'->'%s'", e->cookie.value(), state_name(old_state), state_name(new_state)) ;
+    if (new_state==old_state)
+      log_critical("Event %d: new_state=old_state='%s'", e->cookie.value(), old_state->name()) ;
 #undef state_name
     if(old_state)
       old_state->leave(e) ;
@@ -639,6 +640,23 @@ bool machine_t::cancel_by_cookie(cookie_t c) // XXX need some clean up here?
     return false ;
   }
 }
+
+void machine_t::cancel_events(const QList<uint> &cookies, QList<uint> &failed)
+{
+  pause_t x(this) ;
+  set<unsigned> done ;
+  for (int i=0; i<cookies.size(); ++i)
+  {
+    unsigned ci = cookies[i] ;
+    cookie_t c(ci) ;
+    if (done.count(ci)>0)
+      continue ;
+    done.insert(ci) ;
+    if (not cancel_by_cookie(c))
+      failed.append(ci) ;
+  }
+}
+
 
 void machine_t::cancel_event(event_t *e)
 {

@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -34,7 +34,8 @@
 
 cellular_handler::cellular_handler()
 {
-#if F_CELLULAR_QT
+#if 0
+#if F_CSD
   cnt = new Cellular::NetworkTime ;
   cop = new Cellular::NetworkOperator ;
   const char *signal1 = SIGNAL(timeInfoChanged(const NetworkTimeInfo &)) ;
@@ -58,16 +59,19 @@ cellular_handler::cellular_handler()
   cnt->queryTimeInfo() ;
   QMetaObject::invokeMethod(this, "emulate_operator_signal", Qt::QueuedConnection) ;
 #endif
+#endif
 }
 
+#if 0
 void cellular_handler::emulate_operator_signal()
 {
-#if F_CELLULAR_QT
+#if F_CSD
   log_debug() ;
   new_operator(cop->mnc(), cop->mcc()) ;
   log_debug() ;
 #endif
 }
+#endif
 
 cellular_handler *cellular_handler::static_object = NULL ;
 
@@ -88,10 +92,13 @@ void cellular_handler::uninitialize()
 
 cellular_handler::~cellular_handler()
 {
+#if 0
   delete cop ;
   delete cnt ;
+#endif
 }
 
+#if 0
 void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)
 {
   log_debug("fake nitz requested: mcc=%d offset=%d, time=%d, dst=%d", mcc, offset, time, dst) ;
@@ -118,9 +125,10 @@ void cellular_handler::fake_nitz_signal(int mcc, int offset, int time, int dst)
   emit cellular_data_received(ci) ;
   log_debug() ;
 }
+#endif
 
-
-#if F_CELLULAR_QT
+#if 0
+#if F_CSD
 void cellular_handler::new_nitz_signal(const NetworkTimeInfo &cnti)
 {
   log_debug() ;
@@ -193,7 +201,9 @@ void cellular_handler::new_nitz_signal(const NetworkTimeInfo &cnti)
   log_debug() ;
 }
 #endif
+#endif
 
+#if 0
 void cellular_handler::new_operator(const QString &mnc, const QString &mcc)
 {
   log_debug("mnc='%s', mcc='%s'", string_q_to_std(mnc).c_str(), string_q_to_std(mcc).c_str()) ;
@@ -224,3 +234,4 @@ void cellular_handler::new_operator(const QString &mnc, const QString &mcc)
   emit cellular_data_received(ci) ;
   log_debug() ;
 }
+#endif

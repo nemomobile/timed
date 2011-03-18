@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -54,7 +54,10 @@ struct nanotime_t
   nanotime_t operator+(const nanotime_t &x) const { nanotime_t y=*this ; return y+=x ; }
   nanotime_t operator-(const nanotime_t &x) const { nanotime_t y=*this ; return y-=x ; }
   nanotime_t operator-() const { return ns ? nanotime_t(-s-1,NANO-ns) : nanotime_t(-s,0) ; }
+  nanotime_t div2() const ;
   bool operator<(int32_t x) const { return sec() < x ; }
+  bool operator<(const nanotime_t x) const { return sec()<x.sec() or (sec()==x.sec() and nano()<x.nano()) ; }
+  bool operator>(const nanotime_t x) const { return sec()>x.sec() or (sec()==x.sec() and nano()>x.nano()) ; }
 
   bool is_normalized() const { return NANO > nano() ; }
   void invalidate() { s=~0, ns=~0 ; }

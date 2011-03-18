@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -42,20 +42,22 @@
 #include "olson.h"
 #include "machine.h"
 #include "tz.h"
+#include "csd.h"
 #include "event.h"
+#include "peer.h"
 
 struct Timed : public QCoreApplication
 {
 public:
   inline const char *configuration_path() { return  "/etc/timed.config" ; }
-  inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
+  // inline const char *configuration_type() { return  "/usr/share/timed/typeinfo/config.type" ; }
 
   inline const char *customization_path() { return  "/usr/share/timed/customization.data" ; } // TODO: make it configurable
-  inline const char *customization_type() { return  "/usr/share/timed/typeinfo/customization.type" ; }
+  // inline const char *customization_type() { return  "/usr/share/timed/typeinfo/customization.type" ; }
 
-  inline const char *settings_file_type() { return  "/usr/share/timed/typeinfo/settings.type" ; }
+  // inline const char *settings_file_type() { return  "/usr/share/timed/typeinfo/settings.type" ; }
 
-  inline const char *event_queue_type() { return  "/usr/share/timed/typeinfo/queue.type" ; }
+  // inline const char *event_queue_type() { return  "/usr/share/timed/typeinfo/queue.type" ; }
 
 private:
   bool act_dead_mode ;
@@ -78,6 +80,7 @@ private:
 
   // init_* methods, to be called by constructor only
   void init_unix_signal_handler() ;
+  void init_dbus_peer_info() ;
   void init_scratchbox_mode() ;
   void init_act_dead() ;
   void init_configuration() ;
@@ -106,6 +109,11 @@ public:
   machine_t *am ;
   pinguin *ping ;
   source_settings *settings ;
+  cellular_handler *nitz_object ;
+#if F_CSD
+  csd_t *csd ;
+#endif
+  peer_t *peer ;
 
   void load_events() ;
   void check_voland_service() ;
@@ -113,6 +121,7 @@ public:
   void add_events(const Maemo::Timed::event_list_io_t &events, QList<QVariant> &res, const QDBusMessage &message) ;
   bool dialog_response(cookie_t c, int value) ;
   bool cancel(cookie_t c) { return am->cancel_by_cookie(c) ; }
+  void cancel_events(const QList<uint> &cookies, QList<uint> &failed) { am->cancel_events(cookies, failed) ;}
   void alarm_gate(bool value) { return am->alarm_gate(value) ; }
   int default_snooze(int value) { return settings->default_snooze(value) ; }
   QDBusConnectionInterface *ses_iface ;
@@ -170,9 +179,11 @@ public Q_SLOTS:
 private Q_SLOTS:
   void queue_threshold_timeout() ;
   void unix_signal(int signo) ;
+#if 0
   void nitz_notification(const cellular_info_t &) ;
-  void check_dst() ;
   void tz_by_oracle(olson *tz, tz_suggestions_t) ;
+#endif
+  void check_dst() ;
 public:
   void update_oracle_context(bool set) ;
   void open_epoch() ;

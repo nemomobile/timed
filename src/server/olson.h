@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -37,6 +37,7 @@ class olson
 public:
   std::string name() { return zone_name ; }
   static olson *by_name(const std::string &) ;
+  static olson *by_offset(int offset) ;
   static void destructor() ;
   bool match(time_t at, int offset, int dst_flag) ;
 } ;

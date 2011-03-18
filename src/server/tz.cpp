@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -22,7 +22,9 @@
 **                                                                        **
 ***************************************************************************/
 #include "tz.h"
+#include "tzdata.h"
 
+#if 0
 iodata::validator *tz_oracle_t::validator()
 {
   static iodata::validator *v = NULL ;
@@ -30,7 +32,9 @@ iodata::validator *tz_oracle_t::validator()
     v = iodata::validator::from_file("/usr/share/timed/typeinfo/tzdata.type") ;
   return v ;
 }
+#endif
 
+#if 0
 iodata::record *tz_oracle_t::open_database(const char *path, const char *type)
 {
   iodata::storage file ;
@@ -38,11 +42,13 @@ iodata::record *tz_oracle_t::open_database(const char *path, const char *type)
   file.set_primary_path(path) ;
   return file.load() ;
 }
+#endif
 
 tz_oracle_t::tz_oracle_t()
 {
-  mcc = 0 ;
+  history = new history_t ;
 
+#if 0
   if(iodata::record *single = open_database("/usr/share/tzdata-timed/single.data", "tz_single_t"))
   {
     tz_single = new tz_single_t(single) ;
@@ -68,19 +74,24 @@ tz_oracle_t::tz_oracle_t()
   // log_assert(false, "please initialize xy_to_tz!") ;
 
   read_timezones_by_country() ;
+#endif
 
-  delay = new QTimer ;
-  delay->setSingleShot(true) ;
+  timer = new QTimer ;
+  timer->setSingleShot(true) ;
 }
 
 tz_oracle_t::~tz_oracle_t()
 {
+  delete history ;
+#if 0
   delete tz_single ;
   delete tz_distinct ;
-  delete delay ;
   delete validator() ;
+#endif
+  delete timer ;
 }
 
+#if 0
 void tz_oracle_t::read_timezones_by_country()
 {
   iodata::record *rec = open_database("/usr/share/tzdata-timed/zones-by-country.data", "zones_by_country_t") ;
@@ -103,12 +114,16 @@ void tz_oracle_t::read_timezones_by_country()
   }
   delete rec ;
 }
+#endif
 
+#if 0
 void tz_oracle_t::mcc_delay_timeout()
 {
   log_assert(false, "oops") ;
 }
+#endif
 
+#if 0
 void tz_oracle_t::nitz_data(const cellular_info_t &ci)
 {
   log_debug() ;
@@ -119,7 +134,9 @@ void tz_oracle_t::nitz_data(const cellular_info_t &ci)
   else
     log_critical("oops") ;
 }
+#endif
 
+#if 0
 void tz_oracle_t::handle_offset(const cellular_info_t &ci)
 {
   // preliminary implementation:
@@ -189,7 +206,9 @@ void tz_oracle_t::handle_offset(const cellular_info_t &ci)
     return ;
   }
 }
+#endif
 
+#if 0
 string tz_oracle_t::mcc_to_xy(int mcc_value)
 {
   static bool loaded = false ;
@@ -215,7 +234,10 @@ string tz_oracle_t::mcc_to_xy(int mcc_value)
   map<int, string>::const_iterator it = mcc_to_xy.find(mcc_value) ;
   return it==mcc_to_xy.end() ? "" : it->second ;
 }
+#endif
 
+#if 0
+TODO something like that
 void tz_oracle_t::user_input(olson *tz)
 {
   // not used yet, no UI for that
@@ -223,7 +245,9 @@ void tz_oracle_t::user_input(olson *tz)
   s.gq = Reliable ;
   emit tz_detected(tz, s) ;
 }
+#endif
 
+#if 0
 void tz_oracle_t::mcc_data(int new_mcc, const string & /* mnc not used */)
 {
   if(new_mcc == 0) // offline => do nothing
@@ -256,7 +280,146 @@ void tz_oracle_t::mcc_data(int new_mcc, const string & /* mnc not used */)
 
   emit tz_detected(olson::by_name("Antarctica/DumontDUrville"), s) ;
 }
+#endif
 
+void tz_oracle_t::output(olson *zone)
+{
+  output(zone, new suggestion_t, true) ;
+}
+
+void tz_oracle_t::output(olson *zone, suggestion_t *s, bool sure)
+{
+  log_notice("Time zone magically detected: '%s' (%s" "sure)", zone->name().c_str(), sure?"":"not ") ;
+  emit cellular_zone_detected(zone, *s, sure) ;
+
+  delete s ;
+}
+
+void tz_oracle_t::set_by_offset(const cellular_offset_t &data)
+{
+  if (oper.known_mcc())
+  {
+    set<olson*> m, r, result ; // main, real
+    tzdata::by_country(oper.location(), tzdata::Main_Zones, m) ;
+    tzdata::by_country(oper.location(), tzdata::Real_Zones, r) ;
+    set<olson*>  rm = r ; // real minus main
+    set_change<olson*>(rm, m, false) ; // false: rm-=m
+    bool found = false ;
+    if (data.dst<=0) // sometimes '-1' means "winter time", i.e. set dst to zero
+    {
+      found = found or tzdata::filter(m, data.timestamp, data.offset, 0, result) ;
+      log_debug("after try 1: found=%d", found) ;
+      found = found or tzdata::filter(rm, data.timestamp, data.offset, 0, result) ;
+      log_debug("after try 2: found=%d", found) ;
+    }
+    if (data.dst!=0) // either "summer" (>0) or really not specified (<0)
+    {
+      found = found or tzdata::filter(m, data.timestamp, data.offset, data.dst, result) ;
+      log_debug("after try 3: found=%d", found) ;
+      found = found or tzdata::filter(rm, data.timestamp, data.offset, data.dst, result) ;
+      log_debug("after try 4: found=%d", found) ;
+    }
+    if (not data.sender_time) // sender time not really known, try plus/minus day
+    {
+      const int day = 60*60*24 ;
+      found = found or tzdata::filter(r, data.timestamp-day, data.offset, data.dst, result) ;
+      log_debug("after try 5: found=%d", found) ;
+      found = found or tzdata::filter(r, data.timestamp+day, data.offset, data.dst, result) ;
+      log_debug("after try 6: found=%d", found) ;
+    }
+    log_notice("%d candidates selected: %s", result.size(), tzdata::set_str(result).c_str()) ;
+    olson *zone = NULL ;
+    if (result.size()==0)
+    {
+      zone = olson::by_offset(data.offset) ;
+      if (zone==NULL)
+      {
+        log_error("failed to set time zome by offset=%d", data.offset) ;
+        return ;
+      }
+    }
+    else
+    {
+      zone = * result.begin() ;
+      for (set<olson*>::const_iterator it=result.begin(); it!=result.end(); ++it)
+        if (*it==stat.last_zone)
+        {
+          zone = *it ;
+          break ;
+        }
+    }
+    suggestion_t *s =  new suggestion_t ;
+    for (set<olson*>::const_iterator it=rm.begin(); it!=rm.end(); ++it)
+      s->add(*it, 20) ;
+    for (set<olson*>::const_iterator it=m.begin(); it!=m.end(); ++it)
+      s->add(*it, 10) ;
+    s->add(tzdata::device_default(), 10) ;
+    for (set<olson*>::const_iterator it=result.begin(); it!=result.end(); ++it)
+      s->add(*it, 5) ;
+    output(zone, s, result.size()==1) ;
+  }
+  else // some weird operator, or even empty
+  {
+    log_notice("setting timezone %s for a strange operator %s", data.str().c_str(), oper.str().c_str()) ;
+    olson *zone = olson::by_offset(data.offset) ;
+    if (zone==NULL)
+    {
+      log_error("failed to set time zone by offset=%d", data.offset) ;
+      return ;
+    }
+    output(zone) ;
+    // TODO: find by offset worldwide ???
+  }
+}
+
+void tz_oracle_t::set_by_operator()
+{
+  // bool known = oper.known_mcc() ;
+
+  if (oper.known_mcc())
+  {
+    set<olson*> all_zones, main_zones, real_zones ;
+    tzdata::by_country(oper.location(), tzdata::All_Zones, all_zones) ;
+    tzdata::by_country(oper.location(), tzdata::Main_Zones, main_zones) ;
+    tzdata::by_country(oper.location(), tzdata::Real_Zones, real_zones) ;
+    olson *guess = NULL ;
+    if (stat.last_zone and all_zones.count(stat.last_zone)) // zone contained in this country: take it
+      guess = stat.last_zone ;
+    else
+    {
+      stat.last_zone = NULL ;
+      guess = tzdata::device_default() ;
+      if (not all_zones.count(guess)) // we're not in home country
+        if (olson *first = tzdata::country_default(oper.location())) // let's be paranoid
+          guess = first ;
+    }
+    log_assert(guess, "oops, guessed NULL pointer") ;
+    log_info("zone '%s' magically guessed by operator identity", guess->name().c_str()) ;
+    bool sure = real_zones.size()==1 ; // it's saingle zone country
+    suggestion_t *s = new suggestion_t ;
+    for (set<olson*>::const_iterator it=real_zones.begin(); it!=real_zones.end(); ++it)
+      s->add(*it, 20) ;
+    for (set<olson*>::const_iterator it=main_zones.begin(); it!=main_zones.end(); ++it)
+      s->add(*it, 10) ;
+    s->add(tzdata::device_default(), 10) ;
+    output(guess, s, sure) ;
+  }
+  else // some weird operator located nowhere
+  {
+    if (stat.last_zone==NULL)
+    {
+      log_notice("can't guess zone for operator %s", oper.str().c_str()) ;
+      return ;
+    }
+    else
+    {
+      log_notice("guessing last used zone '%s' for operator %s", stat.last_zone->name().c_str(), oper.str().c_str()) ;
+      output(stat.last_zone) ;
+    }
+  }
+}
+
+#if 0
 tz_single_t::tz_single_t(const iodata::record *list_r)
 {
   log_debug() ;
@@ -325,6 +488,81 @@ olson * tz_distinct_t::guess_timezone(int mcc, tz_suggestions_t &list)
 
   return tzlist[0] ;
 }
+#endif
 
-// --------------------------------------------------
+void tz_oracle_t::cellular_offset(const cellular_offset_t &data)
+{
+  timer->stop() ; // preventing setting tz by operator only
+  if (data.oper.empty())
+    log_error("opratorless NITZ received: %s", data.str().c_str()) ;
+  else if (oper != data.oper)
+  {
+    log_error("unexpected operator change in NITZ package %s (current operator %s)", data.str().c_str(), oper.str().c_str()) ;
+    history->save_status(stat, oper) ;
+    oper = data.oper ;
+    history->load_status(stat, oper) ;
+  }
+  set_by_offset(data) ;
+}
 
+void tz_oracle_t::cellular_operator(const cellular_operator_t &o)
+{
+  timer->stop() ;
+#if 0
+  delete waiting_oper ;
+  waiting_oper = NULL ;
+#endif
+
+  bool empty = o.empty() ;
+  bool same = o==oper ;
+  bool same_country = o.known_mcc() and o.location()==oper.location() ;
+
+  log_debug("o=%s, empty=%d, same=%d, same_country=%d", o.str().c_str(), empty, same, same_country) ;
+  if (empty) // disconnected: do nothing
+  {
+    log_debug("empty operator") ;
+    have_oper = false ;
+    return ;
+  }
+  else
+    have_oper = true ; // TODO: oper = o ;
+
+  if (same) // same as current or same as last: do nothing
+    return ;
+
+  // now the operator is changing, first we have to save status
+  history->save_status(stat, oper) ;
+
+  oper = o ;
+
+  history->load_status(stat, oper) ;
+  log_debug() ;
+
+  if(same_country) // nothing to do?
+    return ;
+
+  bool small_country = oper.known_mcc() and tzdata::is_single_zone_country(oper.location()) ;
+
+  if (small_country and stat.regular)
+    set_by_operator() ;
+  else
+    timer->start(nitz_wait_ms) ;
+}
+
+void tz_oracle_t::waiting_for_nitz_timeout()
+{
+  timer->stop() ;
+  set_by_operator() ;
+}
+
+#if 0
+int tz_oracle_t::basic_mcc(int mcc)
+{
+  return mcc ; // TODO: USA->310 etc etc
+}
+#endif
+
+void suggestion_t::add(olson *zone, int score)
+{
+  s[zone] = score ;
+}

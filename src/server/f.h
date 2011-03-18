@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -31,11 +31,13 @@
 
 #if __HARMATTAN__
 #  define F_CREDS_AEGIS_LIBCREDS 1
-#  define F_CELLULAR_QT 1
+#  define F_CSD 1
 #  define F_SCRATCHBOX 1
 #  define F_ACTING_DEAD 1
 #  define F_IMAGE_TYPE 1
+#  define F_HOME_LOG 1
 #  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
+#  define F_FORCE_HOME_LOG_PATH "/var/cache/timed/HOME_LOG"
 #endif
 
 #if F_CREDS_AEGIS_LIBCREDS

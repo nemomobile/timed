@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -36,6 +36,8 @@
 #include <timed/event>
 #include <timed/wallclock>
 #include <timed/qmacro.h>
+
+Q_DECLARE_METATYPE(QList<uint>) ;
 
 namespace Maemo
 {
@@ -79,6 +81,7 @@ namespace Maemo
       qtdbus_method(add_event, (const Maemo::Timed::Event &e), e.dbus_output(__PRETTY_FUNCTION__)) ;
       qtdbus_method(add_events, (const Maemo::Timed::Event::List &ee), ee.dbus_output()) ;
       qtdbus_method(cancel, (uint32_t cookie), cookie) ;
+      qtdbus_method(cancel_events, (const QList<uint> &cookies), QVariant::fromValue(cookies)) ;
       qtdbus_method(replace_event, (const Maemo::Timed::Event &e, uint32_t cookie), e.dbus_output(__PRETTY_FUNCTION__), cookie) ;
       qtdbus_method(query, (const QMap<QString,QVariant> &attr), QVariant::fromValue(attr)) ;
       qtdbus_method(query_attributes, (uint32_t cookie), cookie) ;
@@ -95,6 +98,10 @@ namespace Maemo
       qtdbus_method(customization_values, (void)) ;
       qtdbus_method(fake_nitz_signal, (int mcc, int offset, int time, int dst), mcc, offset, time, dst) ;
       qtdbus_method(fake_operator_signal, (const QString &mcc, const QString &mnc), mcc, mnc) ;
+      qtdbus_method(fake_csd_time_signal, (const QString &mcc, const QString &mnc, int offset, int time, int dst, int seconds, int nano_seconds), mcc, mnc, offset, time, dst, seconds, nano_seconds) ;
+      qtdbus_method(fake_csd_time_signal_now, (const QString &mcc, const QString &mnc, int offset, int time, int dst), mcc, mnc, offset, time, dst) ;
+      qtdbus_method(get_log_level, (void)) ;
+      qtdbus_method(set_log_level, (int n), n) ;
     } ;
   }
 }

@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -36,12 +36,19 @@
 #include <timed/interface>
 #include <qmlog>
 
+#include "queue.type.h"
+#include "config.type.h"
+#include "customization.type.h"
+#include "settings.type.h"
+
 #include "interfaces.h"
 #include "adaptor.h"
 #include "backup.h"
 #include "timed.h"
 #include "settings.h"
 #include "tz.h"
+#include "tzdata.h"
+#include "csd.h"
 
 static void spam()
 {
@@ -81,6 +88,9 @@ Timed::Timed(int ac, char **av) : QCoreApplication(ac, av)
   log_debug() ;
 
   init_unix_signal_handler() ;
+  log_debug() ;
+
+  init_dbus_peer_info() ;
   log_debug() ;
 
   init_scratchbox_mode() ;
@@ -143,6 +153,13 @@ void Timed::init_unix_signal_handler()
   signal_object->handle(SIGINT) ;
   signal_object->handle(SIGTERM) ;
   signal_object->handle(SIGCHLD) ;
+}
+
+// * Enable questioning of Dbus peers
+void Timed::init_dbus_peer_info()
+{
+  // TODO: make it depening on qmlog::enabled() ?
+  peer =  new peer_t(true) ;
 }
 
 // * Condition "running inside of scratchbox" is detected
@@ -276,7 +293,7 @@ void Timed::init_configuration()
 {
   iodata::storage *config_storage = new iodata::storage ;
   config_storage->set_primary_path(configuration_path()) ;
-  config_storage->set_validator(configuration_type(), "config_t") ;
+  config_storage->set_validator(etc_timed_rc_validator(), "config_t") ;
 
   iodata::record *c = config_storage->load() ;
   log_assert(c, "loading configuration settings failed") ;
@@ -310,7 +327,7 @@ void Timed::init_customization()
 {
   iodata::storage *storage = new iodata::storage ;
   storage->set_primary_path(customization_path()) ;
-  storage->set_validator(customization_type(), "customization_t") ;
+  storage->set_validator(customization_data_validator(), "customization_t") ;
 
   iodata::record *c = storage->load() ;
   log_assert(c, "loading customization settings failed") ;
@@ -343,7 +360,7 @@ void Timed::init_read_settings()
   settings_storage = new iodata::storage ;
   settings_storage->set_primary_path(settings_path) ;
   settings_storage->set_secondary_path(settings_path+".bak") ;
-  settings_storage->set_validator(settings_file_type(), "settings_t") ;
+  settings_storage->set_validator(settings_data_validator(), "settings_t") ;
 
   iodata::record *tree = settings_storage->load() ;
 
@@ -489,7 +506,7 @@ void Timed::init_load_events()
   event_storage = new iodata::storage ;
   event_storage->set_primary_path(events_path) ;
   event_storage->set_secondary_path(events_path+".bak") ;
-  event_storage->set_validator(event_queue_type(), "event_queue_t") ;
+  event_storage->set_validator(events_data_validator(), "event_queue_t") ;
 
   iodata::record *events = event_storage->load() ;
 
@@ -512,13 +529,29 @@ void Timed::init_start_event_machine()
 
 void Timed::init_cellular_services()
 {
-  cellular_handler *nitz_object = cellular_handler::object() ;
+#if 0
+  nitz_object = cellular_handler::object() ;
   int nitzrez = QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), this, SLOT(nitz_notification(const cellular_info_t &))) ;
   log_debug("nitzrez=%d", nitzrez) ;
-
+#endif
+  tzdata::init(tz_by_default) ;
+  csd = new csd_t(this) ;
   tz_oracle = new tz_oracle_t ;
+
+  int res1 = QObject::connect(csd, SIGNAL(csd_cellular_time(const cellular_time_t &)), settings, SLOT(cellular_time_slot(const cellular_time_t &))) ;
+  int res2 = QObject::connect(csd, SIGNAL(csd_cellular_offset(const cellular_offset_t &)), tz_oracle, SLOT(cellular_offset(const cellular_offset_t &))) ;
+  int res3 = QObject::connect(csd, SIGNAL(csd_cellular_operator(const cellular_operator_t &)), tz_oracle, SLOT(cellular_operator(const cellular_operator_t &))) ;
+  int res4 = QObject::connect(tz_oracle, SIGNAL(cellular_zone_detected(olson *, suggestion_t, bool)), settings, SLOT(cellular_zone_slot(olson *, suggestion_t, bool))) ;
+
+  log_assert(res1) ;
+  log_assert(res2) ;
+  log_assert(res3) ;
+  log_assert(res4) ;
+
+#if 0
   QObject::connect(tz_oracle, SIGNAL(tz_detected(olson *, tz_suggestions_t)), this, SLOT(tz_by_oracle(olson *, tz_suggestions_t))) ;
   QObject::connect(nitz_object, SIGNAL(cellular_data_received(const cellular_info_t &)), tz_oracle, SLOT(nitz_data(const cellular_info_t &))) ;
+#endif
 }
 
 void Timed::init_dst_checker()
@@ -744,7 +777,10 @@ void Timed::send_time_settings()
   save_settings() ;
   settings->fix_etc_localtime() ;
   sent_signature = dst_signature(time(NULL)) ;
-  emit settings_changed(settings->get_wall_clock_info(diff), !diff.is_zero()) ;
+  Maemo::Timed::WallClock::Info info(settings->get_wall_clock_info(diff)) ;
+  log_notice("sending signal 'settings_changed': %s", info.str().toStdString().c_str()) ;
+  emit settings_changed(info, not diff.is_zero()) ;
+  log_notice("signal 'settings_changed' sent") ;
   // emit settings_changed_1(systime) ;
   am->reshuffle_queue(diff) ;
   if(q_pause)
@@ -836,6 +872,7 @@ void Timed::unix_signal(int signo)
   }
 }
 
+#if 0
 void Timed::nitz_notification(const cellular_info_t &ci)
 {
   log_debug() ;
@@ -843,7 +880,9 @@ void Timed::nitz_notification(const cellular_info_t &ci)
   settings->cellular_information(ci) ;
   log_debug() ;
 }
+#endif
 
+#if 0
 void Timed::tz_by_oracle(olson *tz, tz_suggestions_t s)
 {
   log_debug("time zone '%s' magicaly detected", tz->name().c_str()) ;
@@ -856,9 +895,12 @@ void Timed::tz_by_oracle(olson *tz, tz_suggestions_t s)
   }
   invoke_signal() ;
 }
+#endif
 
-void Timed::update_oracle_context(bool set)
+void Timed::update_oracle_context(bool s)
 {
+  log_warning("update_oracle_context(%d): NOT IMPLEMENTED", s) ;
+#if 0
   static ContextProvider::Property oracle_p("/com/nokia/time/time_zone/oracle") ;
   static const char * const uncertain_key = "uncertain" ;
   static const char * const primary_key = "primary_candidates" ;
@@ -890,6 +932,7 @@ void Timed::update_oracle_context(bool set)
   }
 
   oracle_p.setValue(map) ;
+#endif
 }
 
 void Timed::open_epoch()

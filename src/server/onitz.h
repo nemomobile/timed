@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -35,7 +35,7 @@ using namespace std ;
 
 #include <qmlog>
 
-#if F_CELLULAR_QT
+#if F_CSD
 #  include <NetworkTime>
 #  include <NetworkOperator>
 using Cellular::NetworkTimeInfo ;
@@ -46,6 +46,8 @@ using Cellular::NetworkTimeInfo ;
 
 #include "misc.h"
 
+#include "cellular.h"
+#if 0
 struct cellular_info_t
 {
   bool flag_offset, flag_time, flag_dst, flag_mcc, flag_mnc ;
@@ -91,6 +93,7 @@ struct cellular_info_t
     return os.str() ;
   }
 } ;
+#endif
 
 struct cellular_handler : public QObject
 {
@@ -98,23 +101,33 @@ struct cellular_handler : public QObject
 private:
   static cellular_handler *static_object ;
   virtual ~cellular_handler() ;
-#if F_CELLULAR_QT
+#if 0
+#if F_CSD
   Cellular::NetworkTime *cnt ;
   Cellular::NetworkOperator *cop ;
 #endif
+#endif
   cellular_handler() ;
+#if 0
   Q_INVOKABLE void emulate_operator_signal() ;
+#endif
+
 signals:
+#if 0
   void cellular_data_received(const cellular_info_t &) ;
+#endif
+
 public:
   static cellular_handler *object() ;
   static void uninitialize() ;
   void fake_nitz_signal(int mcc, int offset, int time, int dst) ;
 public slots:
-#if F_CELLULAR_QT
+#if 0
+#if F_CSD
   void new_nitz_signal(const NetworkTimeInfo &) ; // { log_assert(false, "to be implemented") ; }
 #endif
   void new_operator(const QString &mnc, const QString &mcc) ;
+#endif
 } ;
 
 #endif

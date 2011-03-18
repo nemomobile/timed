@@ -1,3 +1,29 @@
+timed (2.37) unstable; urgency=low
+
+  * compiling .type files into the timed binary
+  * NTP client is working, no interface yet
+  * Changing log level on the fly
+  * Logging in unmountable directory
+  * Fixes: NB#225485 - cancel_events()
+  * some minor stuff
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 17 Feb 2011 11:31:02 +0200
+
+timed (2.36) unstable; urgency=low
+
+  * new csd layer, better cellular stuff logging
+  * new methods: fake_csd_time_signal, fake_csd_time_signal_now
+  * new tzdata layer (needs only 3 data base files)
+  * peer information asked from dbus daemon for logging
+  * a better algorithm for time zone guessing by cellular info
+  * ticker tool: working in background
+  * two new packages: invalid-time, timed-log
+  * many small fixes
+  * Fixes: NB#212572 - workaround for nitz signal coming before operator
+  * Fixes: NB#219005 - timezone guess doesn't work in America
+
+ -- Ilya Dogolazky <ilya.dogolazky@nokia.com>  Thu, 20 Jan 2011 18:12:56 +0200
+
 timed (2.35) unstable; urgency=low
 
   * Fixes: NB#208557 - sleeping in shutdown / reboot modes

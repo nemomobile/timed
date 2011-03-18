@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -89,7 +89,7 @@ iodata::record *zone_source_t::save() const
   return r ;
 }
 
-source_settings::source_settings(Timed *owner)
+source_settings::source_settings(Timed *owner) : QObject(owner)
 {
   log_debug() ;
   o = owner ;
@@ -654,6 +654,33 @@ void source_settings::set_system_time(const nanotime_t &t)
   log_debug("Time change: %s", log.str().c_str()) ;
 }
 
+void source_settings::cellular_time_slot(const cellular_time_t &T)
+{
+  nanotime_t time_at_zero = nanotime_t(T.value) - T.ts ;
+  log_debug("time_at_zero=%s, (T=%s)", time_at_zero.str().c_str(), T.str().c_str()) ;
+  nitz_utc->value = time_at_zero ;
+  if(time_nitz) // we want to use nitz as time source
+  {
+    set_system_time(nitz_utc->value_at_zero()) ;
+    o->open_epoch() ;
+  }
+}
+
+void source_settings::cellular_zone_slot(olson *tz, suggestion_t s, bool sure)
+{
+  (void) sure ;
+  log_debug("time zone '%s' magicaly detected", tz->name().c_str()) ;
+  cellular_zone->value = tz->name() ;
+  cellular_zone->suggestions = s ;
+  if(local_cellular)
+  {
+    fix_etc_localtime() ;
+    // TODO: update_oracle_context(true) ;
+  }
+  o->invoke_signal() ;
+}
+
+#if 0
 void source_settings::cellular_information(const cellular_info_t &ci)
 {
   log_debug() ;
@@ -668,3 +695,4 @@ void source_settings::cellular_information(const cellular_info_t &ci)
     }
   }
 }
+#endif

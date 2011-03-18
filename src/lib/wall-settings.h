@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -44,6 +44,7 @@ struct Maemo::Timed::WallClock::wall_settings_pimple_t
     opcodes = 0 ;
     offset = 0 ;
   }
+  QString str() const ;
 } ;
 
 declare_qtdbus_io(Maemo::Timed::WallClock::wall_settings_pimple_t) ;

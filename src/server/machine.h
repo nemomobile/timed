@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -70,6 +70,7 @@ struct machine_t : public QObject
   void query(const QMap<QString,QVariant> &words, QList<QVariant> &res ) ;
   void get_event_attributes(cookie_t c, QMap<QString,QVariant> &a) ;
   bool cancel_by_cookie(cookie_t c) ;
+  void cancel_events(const QList<uint> &cookies, QList<uint> &failed) ;
   void cancel_event(event_t *e) ;
   event_t *find_event(cookie_t c) ;
   void alarm_gate(bool open) ;

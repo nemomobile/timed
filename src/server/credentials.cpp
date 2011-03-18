@@ -1,6 +1,6 @@
 /***************************************************************************
 **                                                                        **
-**   Copyright (C) 2009-2010 Nokia Corporation.                           **
+**   Copyright (C) 2009-2011 Nokia Corporation.                           **
 **                                                                        **
 **   Author: Ilya Dogolazky <ilya.dogolazky@nokia.com>                    **
 **   Author: Simo Piiroinen <simo.piiroinen@nokia.com>                    **
@@ -65,6 +65,7 @@
    */
 uint32_t get_pid_from_dbus_sync(const QDBusConnection &bus, const QString &name)
 {
+  // TODO make 'dbus_daemon' interface via QDBusAbstractInterface
   QString service   =  "org.freedesktop.DBus" ;
   QString path      = "/org/freedesktop/DBus" ;
   QString interface =  "org.freedesktop.DBus" ;
@@ -227,10 +228,10 @@ bool credentials_t::apply_and_compare()
   return ret ;
 }
 
-credentials_t credentials_t::from_current_process()
+credentials_t credentials_t::from_given_process(pid_t pid)
 {
 #if F_CREDS_AEGIS_LIBCREDS
-  creds_t aegis_creds = creds_gettask(0) ;
+  creds_t aegis_creds = creds_gettask(pid) ;
   credentials_t creds = Aegis::credentials_from_creds_t(aegis_creds) ;
 
   creds_free(aegis_creds) ;
@@ -243,6 +244,11 @@ credentials_t credentials_t::from_current_process()
 #else
 #error unimplemented credentials type
 #endif
+}
+
+credentials_t credentials_t::from_current_process()
+{
+  return credentials_t::from_given_process(0) ;
 }
 
 // TODO: F_CREDS_UID
@@ -303,4 +309,18 @@ credentials_t::credentials_t(const iodata::record *r)
   for(unsigned i=0; i<tok->size(); ++i)
     tokens.insert(tok->get(i)->str()) ;
 #endif
+}
+
+string credentials_t::str() const
+{
+  ostringstream os ;
+  os << "{uid='" << uid << "', gid='" << gid << "'" ;
+#if F_TOKENS_AS_CREDENTIALS
+  bool first = true ;
+  for (set<string>::const_iterator it=tokens.begin(); it!=tokens.end(); ++it)
+    os << (first ? first=false, ", tokens=[" : ", ") << *it ;
+  os << (first ? "no tokens" : "]") ;
+#endif
+  os << "}" ;
+  return os.str() ;
 }
