@@ -92,6 +92,8 @@ uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString
 
 #endif // F_DBUS_INFO_AS_CREDENTIALS
 
+#if F_CREDS_UID
+
 uid_t nameToUid(string name)
 {
   passwd *info = getpwnam(name.c_str()) ;
@@ -127,6 +129,8 @@ string gidToName(gid_t g)
   // couldn't get name for gid
   return "nogroup" ;
 }
+
+#endif // F_CREDS_UID
 
 bool credentials_t::apply() const
 {
