@@ -38,8 +38,7 @@ using namespace std ;
 
 #include <iodata/iodata>
 
-uint32_t get_pid_from_dbus_sync(const QDBusConnection &bus, const QString &name) ;
-uint32_t get_uid_from_dbus_sync(const QDBusConnection &bus, const QString &name) ;
+uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name) ;
 
 struct credentials_t
 {

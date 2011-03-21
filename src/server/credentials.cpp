@@ -63,34 +63,18 @@
    * At the moment I do not know how to handle either of those ...
    * ;-(
    */
-uint32_t get_pid_from_dbus_sync(const QDBusConnection &bus, const QString &name)
+uint32_t get_name_owner_from_dbus_sync(const QDBusConnection &bus, const QString &name)
 {
   // TODO make 'dbus_daemon' interface via QDBusAbstractInterface
   QString service   =  "org.freedesktop.DBus" ;
   QString path      = "/org/freedesktop/DBus" ;
   QString interface =  "org.freedesktop.DBus" ;
+#if F_CREDS_AEGIS_LIBCREDS
   QString method    = "GetConnectionUnixProcessID" ;
-
-  QDBusMessage req  = QDBusMessage::createMethodCall(service, path, interface, method);
-  req << name;
-
-  QDBusReply<uint> reply = bus.call(req);
-
-  if (reply.isValid())
-    return reply.value() ;
-  else
-  {
-    log_error("%s: did not get a valid reply", CSTR(method));
-    return ~0 ;
-  }
-}
-
-uint32_t get_uid_from_dbus_sync(const QDBusConnection &bus, const QString &name)
-{
-  QString service   =  "org.freedesktop.DBus" ;
-  QString path      = "/org/freedesktop/DBus" ;
-  QString interface =  "org.freedesktop.DBus" ;
+#elif F_CREDS_UID
   QString method    = "GetConnectionUnixUser" ;
+  // It seems, we can't get GID just by asking dbus daemon.
+#endif
 
   QDBusMessage req  = QDBusMessage::createMethodCall(service, path, interface, method);
   req << name;
@@ -157,14 +141,13 @@ bool credentials_t::apply() const
   creds_free(aegis_creds_want) ;
 
   return res ;
-
 #elif F_CREDS_UID
-  if (setgid(nameToGid(gid)) != 0 || setgid(nameToUid(uid)) != 0) {
+  if (setgid(nameToGid(gid)) != 0 || setuid(nameToUid(uid)) != 0)
+  {
     log_error("uid cred_set() failed") ;
     return false ;
   }
   return true ;
-
 #else
 #error unimplemented credentials type
 #endif
@@ -237,10 +220,9 @@ credentials_t credentials_t::from_given_process(pid_t pid)
   creds_free(aegis_creds) ;
 
   return creds ;
-
 #elif F_CREDS_UID
-  return credentials_t(uidToName(getuid()), gidToName(getgid())) ;
-
+// TODO: currently nobody:nobody is reported for all processes
+  return credentials_t() ;
 #else
 #error unimplemented credentials type
 #endif
@@ -248,7 +230,13 @@ credentials_t credentials_t::from_given_process(pid_t pid)
 
 credentials_t credentials_t::from_current_process()
 {
+#if F_CREDS_AEGIS_LIBCREDS
   return credentials_t::from_given_process(0) ;
+#elif F_CREDS_UID
+  return credentials_t(uidToName(getuid()), gidToName(getgid())) ;
+#else
+#error unimplemented credentials type
+#endif
 }
 
 // TODO: F_CREDS_UID
@@ -265,21 +253,21 @@ credentials_t::credentials_t(const QDBusMessage &message)
 {
 #if F_CREDS_AEGIS_LIBCREDS
   *this = Aegis::credentials_from_dbus_connection(message) ;
-
 #elif F_CREDS_UID
   QString sender = message.service() ;
-  uint32_t process_id = get_pid_from_dbus_sync(Maemo::Timed::bus(), sender) ;
-  uint32_t user_id = get_uid_from_dbus_sync(Maemo::Timed::bus(), sender) ;
+  uint32_t user_id = get_name_owner_from_dbus_sync(Maemo::Timed::bus(), sender) ;
 
-  if (process_id == ~0u)
-    log_warning("can't get process (pid) of the caller, already terminated?") ;
-  else
-    gid = gidToName(getpgid(process_id)) ;
   if (user_id == ~0u)
     log_warning("can't get user (uid) of the caller, already terminated?") ;
   else
-    uid = uidToName(user_id) ;
-
+  {
+    passwd *info = getpwuid(user_id) ;
+    if (info)
+    {
+      uid = info->pw_name ;
+      gid = gidToName(info->pw_gid) ;
+    }
+  }
 #else
 #error credentials_t;:from_dbus_connection is only implemented for aegis
 #endif
