@@ -1,16 +1,11 @@
 * Fri Mar 04 2011 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.37-1
 - New upstream version (FEA#5513)
-- Refresh patches
-- Drop add-missing-if patch, upstream implementation changed
 - Add cellular-separation patch, fix incomplete defines
-- Add compiler-fix patch, fix "cannot call contructor directly"
-
-* Thu Mar 03 2011 Tapio Rantala <ext-tapio.rantala@nokia.com> 2.35-4
-- Revert previous change
-- Use pkgconfig for libcreds3 (BMC#14026)
-  - Refresh enable-creds patch
-  - Drop libcreds3-meego patch
-  - Add use-pkgconfig patch
+- Add compiler-fix patch, fix "cannot call constructor directly"
+- Add uid-creds patch, uid credentials support (BMC#14696)
+- Drop add-missing-if patch, upstream implementation changed
+- Drop libcreds3-meego patch
+- Refresh patches
 
 * Mon Jan 31 2011 Ryan Ware <ryan.r.ware@intel.com> 2.35
 - Emergency fix to work around change to libcreds3

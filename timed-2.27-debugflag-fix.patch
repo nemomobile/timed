@@ -1,11 +1,11 @@
 diff --git a/src/server/f.h b/src/server/f.h
-index ab036ab..d557463 100644
+index 4b36e8f..c4ee442 100644
 --- a/src/server/f.h
 +++ b/src/server/f.h
-@@ -26,6 +26,7 @@
- 
+@@ -27,6 +27,7 @@
  #if __MEEGO__
- #  define F_CREDS_AEGIS_LIBCREDS 1
+ #  define F_CREDS_UID 1
+ //#  define F_CREDS_NOBODY 1
 +#  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
  #endif
  

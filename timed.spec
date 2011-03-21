@@ -8,16 +8,14 @@ URL:      http://meego.gitorious.org/meego-middleware/timed
 Source0:  %{name}-%{version}.tar.bz2
 Source1:  %{name}.conf
 Patch1:   %{name}-2.11-run-as-system-service.patch
-Patch2:   %{name}-2.27-enable-creds.patch
 Patch3:   %{name}-2.27-debugflag-fix.patch
 Patch5:   %{name}-2.27-typofix.patch
-Patch7:   %{name}-2.35-use-pkgconfig.patch
-Patch8:   %{name}-2.37-cellular-separation.patch
-Patch9:   %{name}-2.37-compiler-fix.patch
+Patch6:   %{name}-2.37-cellular-separation.patch
+Patch7:   %{name}-2.37-compiler-fix.patch
+Patch8:   %{name}-2.37-uid-creds.patch
 
 BuildRequires: pkgconfig(contextprovider-1.0)
 BuildRequires: pkgconfig(dsme_dbus_if)
-BuildRequires: pkgconfig(libcreds3) >= 1.0.0
 BuildRequires: pkgconfig(libpcrecpp)
 BuildRequires: pkgconfig(QtCore) >= 4.7
 BuildRequires: asciidoc
@@ -66,12 +64,11 @@ and signal notification.
 %prep
 %setup -q
 %patch1 -p1
-%patch2 -p1
 %patch3 -p1
 %patch5 -p1
+%patch6 -p1
 %patch7 -p1
 %patch8 -p1
-%patch9 -p1
 
 %build
 export TIMED_VERSION=`head -n1 debian/changelog | sed "s/.*(\([^)+]*\).*/\1/"`
