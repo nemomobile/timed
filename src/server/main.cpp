@@ -59,10 +59,8 @@ int main(int ac, char **av)
       syslog_level = varlog_level = qmlog::None ;
       enable_qmlog = false ; // possibly will change below
     }
-    else if(image_type=="RD")
-      syslog_level = qmlog::Notice ;
-    else if(image_type=="TR")
-      syslog_level = qmlog::Info ;
+    else if(image_type=="RD" || image_type=="TR")
+      syslog_level = qmlog::Warning ;
   }
 #endif
 
