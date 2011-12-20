@@ -51,6 +51,7 @@
 #define CC c_str()
 #define PEER timed->peer ? timed->peer->info(message.service().toStdString()).c_str() : qPrintable(message.service())
 
+#if F_CSD
 static QDateTime time_t_to_qdatetime(time_t t)
 {
   struct tm tm ;
@@ -58,6 +59,7 @@ static QDateTime time_t_to_qdatetime(time_t t)
     return QDateTime() ;
   return QDateTime(QDate(tm.tm_year+1900,tm.tm_mon+1,tm.tm_mday), QTime(tm.tm_hour,tm.tm_min,tm.tm_sec), Qt::UTC) ;
 }
+#endif
 
 class com_nokia_time : public QDBusAbstractAdaptor
 {

@@ -46,8 +46,15 @@ int main(int ac, char **av)
 
   bool enable_qmlog = true ;
 
-  bool debug_flag_timed = access(F_FORCE_DEBUG_PATH, F_OK) == 0 ;
-  bool debug_flag_qmlog = access(QMLOG_ENABLER1, F_OK) == 0 ;
+  bool debug_flag_timed = false ;
+  bool debug_flag_qmlog = false ;
+
+#ifdef F_FORCE_DEBUG_PATH
+  debug_flag_timed = access(F_FORCE_DEBUG_PATH, F_OK) == 0 ;
+#endif
+#ifdef QMLOG_ENABLER1
+  debug_flag_qmlog = access(QMLOG_ENABLER1, F_OK) == 0 ;
+#endif
 
 #if F_IMAGE_TYPE
   string image_type = imagetype() ;

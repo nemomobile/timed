@@ -121,32 +121,31 @@ bool credentials_t::apply_and_compare()
   if (current.gid != gid)
     COMMA << "current gid='" << current.gid << "' (requested gid='" << gid <<"')", id_matches = false ;
 
-#if F_TOKENS_AS_CREDENTIALS
-
   int all_accrued = true ;
-#define COMMA_A (all_accrued ? COMMA << "tokens not present: {" : os << ", ")
 
+#if F_TOKENS_AS_CREDENTIALS
+#define COMMA_A (all_accrued ? COMMA << "tokens not present: {" : os << ", ")
   for (set<string>::const_iterator it=tokens.begin(); it!=tokens.end(); ++it)
     if (current.tokens.count(*it)==0)
       COMMA_A << "'" << *it << "'", all_accrued = false ;
   if (!all_accrued)
     os << "}" ;
+#undef COMMA_A
+#endif // F_TOKENS_AS_CREDENTIALS
 
   int all_dropped = true ;
-#define COMMA_D (all_dropped ? COMMA << "tokens not dropped: {" : os << ", ")
 
+#if F_TOKENS_AS_CREDENTIALS
+#define COMMA_D (all_dropped ? COMMA << "tokens not dropped: {" : os << ", ")
   for (set<string>::const_iterator it=current.tokens.begin(); it!=current.tokens.end(); ++it)
     if (tokens.count(*it)==0)
       COMMA_D << "'" << *it << "'", all_accrued = false ;
   if (!all_dropped)
     os << "}" ;
+#undef COMMA_D
+#endif // F_TOKENS_AS_CREDENTIALS
 
   bool equal = id_matches and all_accrued and all_dropped ;
-
-#undef COMMA_A
-#undef COMMA_D
-
-#endif // F_TOKENS_AS_CREDENTIALS
 
 #undef COMMA
 

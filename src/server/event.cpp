@@ -769,6 +769,8 @@ bool event_t::drop_privileges(const action_t &a)
   // creds := client_creds - (tokens_to_remove 1+2)
   set_change<string> (creds.tokens, tokens_to_remove1, false) ;
   set_change<string> (creds.tokens, tokens_to_remove2, false) ;
+#else
+#error event_t::drop_privileges(const action_t &a) is only implemented for F_TOKENS_AS_CREDENTIALS (related to F_CREDS_AEGIS_LIBCREDS)
 #endif // F_TOKENS_AS_CREDENTIALS
 
   return creds.apply_and_compare() ;

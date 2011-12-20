@@ -837,6 +837,9 @@ void Timed::send_next_bootup_event(int value)
     log_info("signal %s(%d) sent", string_q_to_std(signal).c_str(), value) ;
   else
     log_error("Failed to send the signal %s(%d) on system bus: %s", string_q_to_std(signal).c_str(), value, dsme.lastError().message().toStdString().c_str()) ;
+#else
+  (void) value ;
+  log_debug("fake implementation; do nothing since have no dsme") ;
 #endif    
 }
 
