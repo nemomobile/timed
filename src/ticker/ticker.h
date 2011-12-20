@@ -23,6 +23,7 @@
 ***************************************************************************/
 #if ! __MEEGO__
 #define USE_CELLULAR_QT 1
+#define HAVE_DSME 1
 #endif
 
 #ifndef TICKER_H

@@ -1,3 +1,16 @@
+CONFIG(MEEGO) \
+{
+  message("MEEGO flag is set")
+  DEFINES += __MEEGO__
+} \
+else \
+{
+  message("MEEGO flag is not set, assuming HARMATTAN")
+  CONFIG += cellular-qt
+  CONFIG  += dsme_dbus_if
+  QMAKE_CXXFLAGS  += -Wall -Wno-psabi
+}
+
 QT -= gui
 QT += dbus
 
@@ -24,16 +37,5 @@ HEADERS = memory.h
 
 INSTALLS += target
 target.path = $$(DESTDIR)/usr/bin
-
-CONFIG(MEEGO) \
-{
-  message("MEEGO flag is set")
-  DEFINES += __MEEGO__
-} \
-else \
-{
-  CONFIG += cellular-qt
-  QMAKE_CXXFLAGS  += -Wall -Wno-psabi
-}
 
 QMAKE_CXXFLAGS  += -Wall -Werror

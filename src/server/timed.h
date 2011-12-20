@@ -24,6 +24,8 @@
 #ifndef TIMED_H
 #define TIMED_H
 
+#include "f.h"
+
 #include <QCoreApplication>
 #include <QMetaMethod>
 #include <QDBusConnectionInterface>

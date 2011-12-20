@@ -1,3 +1,18 @@
+CONFIG(MEEGO) \
+{
+  message("MEEGO flag is set")
+  DEFINES += __MEEGO__
+} \
+else \
+{
+  message("MEEGO flag is not set, assuming HARMATTAN")
+  CONFIG  += cellular-qt
+  CONFIG  += dsme_dbus_if
+  LIBS    += -lcreds
+  DEFINES += __HARMATTAN__
+  QMAKE_CXXFLAGS  += -Wall -Wno-psabi
+}
+
 QT -= gui
 QT += dbus network
 
@@ -71,19 +86,5 @@ timedrc.files = timed.rc
 timedrc.path  = $$(DESTDIR)/etc
 
 INSTALLS += target xml backupconf backupscripts cud rfs aegishelper aegisfs timedrc
-
-CONFIG(MEEGO) \
-{
-  message("MEEGO flag is set")
-  DEFINES += __MEEGO__
-} \
-else \
-{
-  message("MEEGO flag is not set, assuming HARMATTAN")
-  CONFIG  += cellular-qt
-  LIBS    += -lcreds
-  DEFINES += __HARMATTAN__
-  QMAKE_CXXFLAGS  += -Wall -Wno-psabi
-}
 
 QMAKE_CXXFLAGS  += -Wall -Werror

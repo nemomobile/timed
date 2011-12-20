@@ -34,6 +34,7 @@
 #  define F_CSD 1
 #  define F_SCRATCHBOX 1
 #  define F_ACTING_DEAD 1
+#  define HAVE_DSME 1
 #  define F_IMAGE_TYPE 1
 #  define F_HOME_LOG 1
 #  define F_FORCE_DEBUG_PATH "/var/cache/timed/DEBUG"
