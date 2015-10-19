@@ -1,3 +1,0 @@
-data_directory = ".timed",
-events_file = "events.data",
-settings_file = "settings.data" .

@@ -1,2 +1,2 @@
-src/ -- Harmattan Qt-based implementation
-debian/ -- packaging stuff
+This project has migrated to https://git.merproject.org/mer-core/timed
+as part of the Mer/Nemo merge work
